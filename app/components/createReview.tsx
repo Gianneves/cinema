@@ -7,11 +7,12 @@ import { Textarea } from "./ui/textarea";
 import { Button } from "./ui/button";
 import { useState } from "react";
 import { RatingStar } from "./ratingStar";
-import { PostReview } from "~/routes/api/get-reviews";
+import { PostReview, UpdateReview } from "~/routes/api/get-reviews";
 
 type CreateReviewProps = {
     user?: User;
     movie: string;
+    userReview?: UserReview
 }
 
 type Review = {
@@ -20,14 +21,24 @@ type Review = {
     movie: string;
 }
 
-export function CreateReview({ user, movie }: CreateReviewProps) {
+type UserReview = {
+    id?: string;
+    review: string;
+    rating: number;
 
-    const [review, setReview] = useState('');
-    const [rating, setRating] = useState(0)
+}
+
+export function CreateReview({ user, movie, userReview }: CreateReviewProps) {
+
+    const prevReviewState = userReview?.review ? userReview?.review : ''
+    const prevPlaceHolder = userReview?.review ? userReview?.review : 'Escreva seus pensamentos sobre esse filme'
+
+    const [review, setReview] = useState(prevReviewState);
+    const [rating, setRating] = useState(userReview?.rating ?? 0)
 
     function handleButton() {
         if (!review) return;
-        
+
         const movieReview = {
             rating,
             review,
@@ -38,12 +49,28 @@ export function CreateReview({ user, movie }: CreateReviewProps) {
 
     }
 
+    async function handleEdit() {
+        if (!review || !userReview?.id) return;
+
+        try {
+            await UpdateReview(userReview.id, { rating, review });
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
     async function postReview(review: Review) {
-        await PostReview(review);
+        try {
+            await PostReview(review);
+        } catch (error) {
+            console.error(error);
+        }
     }
 
     return (
         <Card className="w-140 bg-[#0D0D1A] p-4">
+
+
             <div className="flex">
                 <div className="flex gap-2">
                     <Avatar>
@@ -64,7 +91,7 @@ export function CreateReview({ user, movie }: CreateReviewProps) {
                             <Field>
                                 <Textarea
                                     id="checkout-7j9-optional-comments"
-                                    placeholder="Escreva seus pensamentos sobre esse filme"
+                                    placeholder={prevPlaceHolder}
                                     className="resize-none text-gray-500"
                                     onChange={(event) => setReview(event?.target.value)}
                                 />
@@ -74,9 +101,15 @@ export function CreateReview({ user, movie }: CreateReviewProps) {
                 </FieldGroup>
             </div>
             <div className="flex justify-end mr-2">
-                <Button onClick={handleButton} className="bg-[#F0A42E] hover:bg-[#e69d30] text-black w-23 font-bold cursor-pointer">
-                    Publicar
-                </Button>
+                {userReview ? (
+                    <Button onClick={handleEdit} className="bg-[#F0A42E] hover:bg-[#e69d30] text-black w-23 font-bold cursor-pointer">
+                        Editar
+                    </Button>
+                ) :
+                    <Button onClick={handleButton} className="bg-[#F0A42E] hover:bg-[#e69d30] text-black w-23 font-bold cursor-pointer">
+                        Publicar
+                    </Button>
+                }
             </div>
         </Card>
     );

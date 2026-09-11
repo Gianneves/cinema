@@ -24,6 +24,8 @@ export default function Details() {
     const dashboardData = useRouteLoaderData<typeof dashboardLoader>("routes/dashboard");
     const user = dashboardData?.user;
 
+    const userReview =  reviews.find((rv: any) => rv.user.id == user?.id);
+
     function formatedDate(date: string) {
         if (!date) return "";
         const dateToTransform = new Date(date);
@@ -75,7 +77,7 @@ export default function Details() {
             <div className="ml-8 mt-8">
                 <p className="font-bold text-gray-500 mb-4">Avaliações</p>
 
-                <CreateReview user={user} movie={movie.id} />
+                <CreateReview user={user} movie={movie.id} userReview={userReview} />
 
                 {reviews.length > 0 && (
                     <div className="mt-8">
