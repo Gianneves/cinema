@@ -8,8 +8,9 @@ type RatingStarProps = {
 
 export function RatingStar({ value = 0, onChange }: RatingStarProps) {
     const [hover, setHover] = useState<number | null>(null);
+    const readOnly = !onChange;
 
-    const active = hover ?? value;
+    const active = readOnly ? value : (hover ?? value);
 
     function handleClick(i: number, half: boolean) {
         onChange?.(half ? i + 0.5 : i + 1);
@@ -24,16 +25,16 @@ export function RatingStar({ value = 0, onChange }: RatingStarProps) {
                     <button
                         key={i}
                         type="button"
-                        onMouseMove={(e) => {
+                        onMouseMove={readOnly ? undefined : (e) => {
                             const half = e.nativeEvent.offsetX < e.currentTarget.offsetWidth / 2;
                             setHover(i + (half ? 0.5 : 1));
                         }}
-                        onMouseLeave={() => setHover(null)}
-                        onClick={(e) => {
+                        onMouseLeave={readOnly ? undefined : () => setHover(null)}
+                        onClick={readOnly ? undefined : (e) => {
                             const half = e.nativeEvent.offsetX < e.currentTarget.offsetWidth / 2;
                             handleClick(i, half);
                         }}
-                        className="relative h-4.5 w-4.5 cursor-pointer"
+                        className={`relative h-4.5 w-4.5 ${readOnly ? "" : "cursor-pointer"}`}
                     >
                         <Star size={18} className="absolute text-gray-600" />
                         <Star
