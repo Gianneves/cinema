@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useLoaderData, useParams } from "react-router";
+import { useLoaderData, useParams, useRouteLoaderData } from "react-router";
 import { Movie } from "./api/get-movies";
 import type { Route } from "./+types/details";
 import { Badge } from "~/components/ui/badge";
@@ -7,6 +7,8 @@ import { Button } from "~/components/ui/button";
 import { Dot } from "lucide-react";
 import { Review } from "~/components/review";
 import { GetReviewById } from "./api/get-reviews";
+import { CreateReview } from "~/components/createReview";
+import type { loader as dashboardLoader } from "~/routes/dashboard";
 
 
 export async function loader({ params }: Route.LoaderArgs) {
@@ -16,8 +18,13 @@ export async function loader({ params }: Route.LoaderArgs) {
     return { movie, reviews }
 }
 
+
 export default function Details() {
     const { movie, reviews } = useLoaderData<typeof loader>();
+    const dashboardData = useRouteLoaderData<typeof dashboardLoader>("routes/dashboard");
+    const user = dashboardData?.user;
+
+    const userReview =  reviews.find((rv: any) => rv.user.id == user?.id);
 
     function formatedDate(date: string) {
         if (!date) return "";
@@ -29,7 +36,7 @@ export default function Details() {
         <div className="min-h-screen bg-[#07070E]">
             <div className="relative">
                 <img src={movie.backdrops} className="w-full h-80 object-cover" alt="backdrops image" />
-        
+
                 <div className="absolute inset-0 bg-linear-to-t from-[#07070E] via-[#07070E]/60 to-transparent" />
 
                 <div className="absolute bottom-0 left-0 flex mt-20 ml-8 pb-8">
@@ -68,11 +75,20 @@ export default function Details() {
                 </div>
             </div>
             <div className="ml-8 mt-8">
-                <p className="font-bold text-gray-500">Avaliações</p>
+                <p className="font-bold text-gray-500 mb-4">Avaliações</p>
+
+                <CreateReview user={user} movie={movie.id} userReview={userReview} />
+
+                {reviews.length > 0 && (
+                    <div className="mt-8">
+                        <span className="text-gray-500 font-bold">Reviews da comunidade ({reviews.length})</span>
+                    </div>
+                )}
+
                 {reviews.map((review: any) => (
                     <Review key={review.id} review={review} />
                 ))}
-              
+
             </div>
         </div>
     );

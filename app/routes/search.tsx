@@ -50,8 +50,14 @@ export default function Search() {
 
     async function handleMovieBtn() {
         setLoading(true);
-        const movie = await FindMovieAi(search);
-        setFoundMovies(movie)
+        try {
+            const movie = await FindMovieAi(search);
+            setFoundMovies(movie)
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
     }
 
     return (

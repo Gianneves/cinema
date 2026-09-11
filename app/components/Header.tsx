@@ -13,7 +13,7 @@ import { NavigationMenu, NavigationMenuItem, NavigationMenuLink, NavigationMenuL
 import { Link, useLocation } from "react-router";
 import { cn } from "~/lib/utils";
 import type { User } from "~/lib/auth.server";
-import { API_URL, ASSETS_URL } from "~/constants/api";
+import { ASSETS_URL } from "~/constants/api";
 
 type HeaderProps = {
   user: User;
