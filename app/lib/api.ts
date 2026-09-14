@@ -43,7 +43,6 @@ export async function apiRequest<T = any>(url: string, init?: RequestInit): Prom
         try {
             body = await response.json();
         } catch {
-            // corpo da resposta não é JSON
         }
 
         const message =
