@@ -2,23 +2,17 @@ import type { User } from "~/lib/auth.server";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Card } from "./ui/card";
 import { ASSETS_URL } from "~/constants/api";
-import { Field, FieldGroup, FieldLabel, FieldSet } from "./ui/field";
 import { Textarea } from "./ui/textarea";
 import { Button } from "./ui/button";
 import { useState } from "react";
 import { RatingStar } from "./ratingStar";
-import { PostReview, UpdateReview } from "~/routes/api/get-reviews";
+import { Spinner } from "./ui/spinner";
+import { useFetcher } from "react-router";
 
 type CreateReviewProps = {
     user?: User;
     movie: string;
-    userReview?: UserReview
-}
-
-type Review = {
-    rating: number;
-    review: string;
-    movie: string;
+    userReview?: UserReview;
 }
 
 type UserReview = {
@@ -29,88 +23,54 @@ type UserReview = {
 }
 
 export function CreateReview({ user, movie, userReview }: CreateReviewProps) {
+    const fetcher = useFetcher();
+    const isSubmitting = fetcher.state === 'submitting';
+    const isEditing = Boolean(userReview);
 
-    const prevReviewState = userReview?.review ? userReview?.review : ''
-    const prevPlaceHolder = userReview?.review ? userReview?.review : 'Escreva seus pensamentos sobre esse filme'
+    const prevPlaceHolder = userReview?.review ? userReview?.review : 'Escreva seus pensamentos sobre esse filme';
 
-    const [review, setReview] = useState(prevReviewState);
-    const [rating, setRating] = useState(userReview?.rating ?? 0)
-
-    function handleButton() {
-        if (!review) return;
-
-        const movieReview = {
-            rating,
-            review,
-            movie
-        }
-
-        postReview(movieReview)
-
-    }
-
-    async function handleEdit() {
-        if (!review || !userReview?.id) return;
-
-        try {
-            await UpdateReview(userReview.id, { rating, review });
-        } catch (error) {
-            console.error(error);
-        }
-    }
-
-    async function postReview(review: Review) {
-        try {
-            await PostReview(review);
-        } catch (error) {
-            console.error(error);
-        }
-    }
+    const [rating, setRating] = useState(userReview?.rating ?? 0);
 
     return (
         <Card className="w-140 bg-[#0D0D1A] p-4">
-
-
-            <div className="flex">
-                <div className="flex gap-2">
-                    <Avatar>
-                        <AvatarImage src={`${ASSETS_URL}/avatars/${user?.avatar}`} alt="shadcn" />
-                        <AvatarFallback>CN</AvatarFallback>
-                    </Avatar>
-                    <div className="flex flex-col">
-                        <span className="text-white font-bold leading-none">{user?.name}</span>
-                        <RatingStar value={rating} onChange={setRating} />
+            <fetcher.Form method="post">
+                <input type="hidden" name="movie" value={movie} />
+                <input type="hidden" name="rating" value={rating} />
+                {isEditing && <input type="hidden" name="intent" value="edit" />}
+                {isEditing && <input type="hidden" name="id" value={userReview?.id} />}
+                <div className="flex">
+                    <div className="flex gap-2">
+                        <Avatar>
+                            <AvatarImage src={`${ASSETS_URL}/avatars/${user?.avatar}`} alt="shadcn" />
+                            <AvatarFallback>CN</AvatarFallback>
+                        </Avatar>
+                        <div className="flex flex-col">
+                            <span className="text-white font-bold leading-none">{user?.name}</span>
+                            <RatingStar value={rating} onChange={setRating} />
+                        </div>
                     </div>
+
                 </div>
 
-            </div>
-            <div className="w-130 mt-4">
-                <FieldGroup>
-                    <FieldSet>
-                        <FieldGroup>
-                            <Field>
-                                <Textarea
-                                    id="checkout-7j9-optional-comments"
-                                    placeholder={prevPlaceHolder}
-                                    className="resize-none text-gray-500"
-                                    onChange={(event) => setReview(event?.target.value)}
-                                />
-                            </Field>
-                        </FieldGroup>
-                    </FieldSet>
-                </FieldGroup>
-            </div>
-            <div className="flex justify-end mr-2">
-                {userReview ? (
-                    <Button onClick={handleEdit} className="bg-[#F0A42E] hover:bg-[#e69d30] text-black w-23 font-bold cursor-pointer">
-                        Editar
+                <div className="w-130 mt-5">
+                    <Textarea
+                        name="review"
+                        key={userReview?.id ?? 'new'}
+                        defaultValue={userReview?.review ?? ''}
+                        placeholder={prevPlaceHolder}
+                        className="resize-none text-gray-500"
+                    />
+                </div>
+
+                <div className="mt-2 flex justify-end mr-2">
+                    <Button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="bg-[#F0A42E] hover:bg-[#e69d30] text-black w-23 font-bold cursor-pointer">
+                        { isSubmitting ? <Spinner /> : isEditing ? 'Editar' : 'Publicar' }
                     </Button>
-                ) :
-                    <Button onClick={handleButton} className="bg-[#F0A42E] hover:bg-[#e69d30] text-black w-23 font-bold cursor-pointer">
-                        Publicar
-                    </Button>
-                }
-            </div>
+                </div>
+            </fetcher.Form>
         </Card>
     );
 }
