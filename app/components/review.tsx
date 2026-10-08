@@ -4,10 +4,6 @@ import { Card } from "./ui/card";
 import { ASSETS_URL } from "~/constants/api";
 import { RatingStar } from "./ratingStar";
 
-type ReviewProps = {
-
-}
-
 export function Review({ review }: any) {
 
     function formatedData(date: string) {

@@ -102,7 +102,7 @@ export default function Search() {
                                     </Badge>
 
                                     <div>
-                                        <span className="text-white">Foram encontrados {foundMovies.length} matches de filmes"" — analisando temas, atmosfera, narrativa e estilo visual do filme.</span>
+                                        <span className="text-white">Foram encontrados {foundMovies.length} matches de filmes — analisando temas, atmosfera, narrativa e estilo visual do filme.</span>
                                     </div>
                                 </Card>
                                 <p className="text-white font-bold mt-4 mb-4">Melhores matches</p>
