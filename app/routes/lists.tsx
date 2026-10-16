@@ -1,5 +1,5 @@
 import { Button } from "~/components/ui/button";
-import { CreateList, DeleteList, GetLists } from "./api/handle-lists";
+import { CreateList, DeleteList, EditList, GetLists, RemoveMovie } from "./api/handle-lists";
 import type { Route } from "./+types/lists";
 import { useFetcher, useLoaderData } from "react-router";
 import { ListCard } from "~/components/listCard";
@@ -14,10 +14,9 @@ import { Field, FieldGroup } from "@/components/ui/field";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input"
 import { Spinner } from "~/components/ui/spinner";
-import type { List } from "~/types/list";
+import type { AddMovieDto, List } from "~/types/list";
 import { useEffect, useState } from "react";
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "~/components/ui/hover-card";
-import { Trash } from "lucide-react";
+
 
 export async function loader({ params, request }: Route.LoaderArgs) {
     const cookie = request.headers.get('cookie');
@@ -35,6 +34,19 @@ export async function action({ request }: Route.ActionArgs) {
     if (intent === 'delete') {
         const listId = String(formData.get('listId'));
         await DeleteList(listId, cookie ?? undefined);
+        return { success: true }
+    }
+
+    if (intent === 'edit') {
+        const listId = String(formData.get('listId'));
+        const editTitle = String(formData.get('titleEdit'));
+
+        const data: List = {
+            title: String(editTitle || "").trim()
+        }
+
+        await EditList(listId, data, cookie ?? undefined);
+
         return { success: true }
     }
 
@@ -108,7 +120,7 @@ export default function Lists() {
             </div>
             <div className="grid grid-cols-3 gap-4">
                 {lists.length > 0 && lists.map((list) => (
-                    <ListCard key={list.id} list={list} />  
+                    <ListCard key={list.id} list={list} />
                 ))}
             </div>
         </div>

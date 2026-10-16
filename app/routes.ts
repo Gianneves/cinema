@@ -7,6 +7,7 @@ export default [
         index("routes/dashboard-home.tsx"),
         route("search", "routes/search.tsx"),
         route("lists", "routes/lists.tsx"),
+        route("lists/:id", "routes/list-detail.tsx"),
         route("friends", "routes/friends.tsx"),
         route("details/:id", "routes/details.tsx")
     ]),
