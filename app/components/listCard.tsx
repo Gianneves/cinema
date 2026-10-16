@@ -129,7 +129,7 @@ export function ListCard({ list }: ListCardProps) {
                 </div>
 
                 <div className="absolute top-4 right-1 h-full w-[34%]
-      flex flex-row items-start gap-1
+      flex flex-row items-start justify-end gap-1
       bg-linear-to-l 
       opacity-0 translate-x-2 group-hover:opacity-100 group-hover:translate-x-0
       transition-all duration-200">

@@ -29,8 +29,7 @@ export function RenderMovieCard({ movie, isListId }: RenderMovieCardProps) {
         <div
             className="group cursor-pointer relative"
             onClick={(e) => {
-                // Cliques em ações (Dialog/Portal) borbulham pela árvore React:
-                // ignora se o clique veio de um botão ou do dialog.
+                
                 if ((e.target as HTMLElement).closest('button, [role="dialog"], [data-slot="dialog-content"], [data-slot="dialog-overlay"]')) {
                     return;
                 }
@@ -48,8 +47,8 @@ export function RenderMovieCard({ movie, isListId }: RenderMovieCardProps) {
             </div>
 
 
-            <div className="absolute top-4 right-1 h-full w-[40%]
-      flex flex-row items-start gap-1
+            <div className="absolute top-4 right-6 h-full 
+      flex flex-row items-start justify-end 
       bg-linear-to-l 
       opacity-0 translate-x-2 group-hover:opacity-100 group-hover:translate-x-0
       transition-all duration-200"
