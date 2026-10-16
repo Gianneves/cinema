@@ -21,6 +21,14 @@ export function GetLists(cookie?: string) {
     });
 }
 
+export function GetOneList(id: string, cookie?: string) {
+    return apiRequest<WatchList[]>(`${api}/${id}`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json", ...(cookie ? { cookie } : {}) },
+        credentials: "include",
+    });
+}
+
 export function AddMovieToAList(data: AddMovieDto, cookie?: string) {
     return apiRequest(`${api}/${data.listId}/movies/${data.movieId}`, {
         method: "POST",
@@ -29,7 +37,17 @@ export function AddMovieToAList(data: AddMovieDto, cookie?: string) {
     });
 }
 
+export function EditList(id: string, data: List, cookie?: string) {
+    return apiRequest(`${api}/${id}`, {
+        method: 'PUT',
+        headers: { "Content-Type": "application/json", ...(cookie ? { cookie } : {}) },
+        body: JSON.stringify(data),
+        credentials: "include"
+    })
+}
+
 export function RemoveMovie(data: AddMovieDto, cookie?: string) {
+    
     return apiRequest(`${api}/${data.listId}/movies/${data.movieId}`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json", ...(cookie ? { cookie } : {}) },
