@@ -1,11 +1,24 @@
 // ~/components/renderMovieCard.tsx
 import { useNavigate } from "react-router";
 import { MovieCard } from "./movieCard";
+import { DeleteDialog } from "./deleteDialog";
+import { useState } from "react";
+import { Eye } from "lucide-react";
+import { Button } from "~/components/ui/button";
+import type { Route } from "../routes/+types/lists";
+import type { AddMovieDto } from "~/types/list";
+import { RemoveMovie } from "~/routes/api/handle-lists";
 
-type RenderMovieCardProps = { movie: any };
+type RenderMovieCardProps = {
+    movie: any,
+    isListId?: string | undefined
+}
 
-export function RenderMovieCard({ movie }: RenderMovieCardProps) {
+
+
+export function RenderMovieCard({ movie, isListId }: RenderMovieCardProps) {
     const navigate = useNavigate();
+    const [openDelete, setOpenDelete] = useState(false);
 
     function formatedDate(date: string) {
         if (!date) return "";
@@ -14,8 +27,15 @@ export function RenderMovieCard({ movie }: RenderMovieCardProps) {
 
     return (
         <div
-            className="group cursor-pointer"
-            onClick={() => navigate(`/dashboard/details/${movie.id}`)}
+            className="group cursor-pointer relative"
+            onClick={(e) => {
+                // Cliques em ações (Dialog/Portal) borbulham pela árvore React:
+                // ignora se o clique veio de um botão ou do dialog.
+                if ((e.target as HTMLElement).closest('button, [role="dialog"], [data-slot="dialog-content"], [data-slot="dialog-overlay"]')) {
+                    return;
+                }
+                navigate(`/dashboard/details/${movie.id}`);
+            }}
         >
             <MovieCard movie={movie} />
             <div className="mt-2 flex flex-col">
@@ -26,6 +46,24 @@ export function RenderMovieCard({ movie }: RenderMovieCardProps) {
                     {formatedDate(movie.release_date)}
                 </span>
             </div>
+
+
+            <div className="absolute top-4 right-1 h-full w-[40%]
+      flex flex-row items-start gap-1
+      bg-linear-to-l 
+      opacity-0 translate-x-2 group-hover:opacity-100 group-hover:translate-x-0
+      transition-all duration-200"
+                onClick={(e) => e.stopPropagation()}
+                onMouseDown={(e) => e.stopPropagation()}
+            >
+
+                {isListId && (
+                    <DeleteDialog openDelete={openDelete} setOpenDelete={setOpenDelete} movie={movie} isListId={isListId} />
+                )}
+            </div>
+
+
+
         </div>
     );
 }

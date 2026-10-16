@@ -7,55 +7,53 @@ import {
     DialogClose,
     DialogTitle
 } from "~/components/ui/dialog";
-import { useState } from "react";
+import { useEffect, useMemo, useState, type Dispatch, type SetStateAction } from "react";
 import { Button } from "~/components/ui/button";
 import { Eye, PenIcon, Trash } from "lucide-react";
 import { Spinner } from "./ui/spinner";
-import { useFetcher } from "react-router";
+import { useFetcher, useNavigate } from "react-router";
+import { Field, FieldGroup } from "@/components/ui/field";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { DeleteDialog } from "./deleteDialog";
 
 
 type ListCardProps = {
     list: WatchList
 }
 
-
-
 export function ListCard({ list }: ListCardProps) {
+    const navigate = useNavigate();
     const fetcher = useFetcher();
     const [openDelete, setOpenDelete] = useState(false);
+    const [openEdit, setOpenEdit] = useState(false);
     const isSubmitting = fetcher.state === 'submitting';
 
-    const covers = list.movies.map((item) => item.cover);
+    const covers = useMemo(() => {
+        const all = list.movies.map((item) => item.cover);
 
-    function shuffle(array: string[]) {
-        for (let i = array.length - 1; i > 0; i--) {
+        const shuffled = [...all];
+        for (let i = shuffled.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
-            [array[i], array[j]] = [array[j], array[i]];
-        }
-        return array;
-    }
-
-    function handleCoverList(list: string[]) {
-        const len = list.length;
-        let finalLen = 0;
-        let random = shuffle(list);
-
-        finalLen = len;
-
-        if (len > 4) {
-            finalLen = 4;
-            random.splice(4);
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
         }
 
+        return shuffled.slice(0, 4);
+    }, [list.movies]);
 
-        return { finalLen, random };
-    }
+    useEffect(() => {
+        const isIddle = fetcher.state === 'idle';
+        const hasData = fetcher.data && fetcher.data.success;
 
+        if (openEdit && isIddle && hasData) {
+            setOpenEdit(false);
+        }
+
+    }, [fetcher.state, fetcher.data]);
 
     return (
         <Card className="relative max-w-150 p-0 min-h-50 bg-[#0D0D1A] overflow-hidden cursor-pointer border border-gray-500 hover:border-2 hover:border-[#F0A42E]">
             <div className="relative group">
-
                 {covers.length === 0 && (
                     <img
                         src='/cover-movie.jpg'
@@ -72,13 +70,44 @@ export function ListCard({ list }: ListCardProps) {
                     />
                 )}
 
-                {covers.length >= 2 && (
-                    <div className={`grid grid-cols-${handleCoverList(covers).finalLen}`}>
-                        {handleCoverList(covers).random.map((cover) => (
+                {covers.length === 2 && (
+                    <div className="grid grid-cols-2">
+                        {covers.map((cover, index) => (
                             <img
+                                key={`${cover}-${index}`}
                                 src={cover}
                                 alt="Event cover"
-                                className="brightness-60 grayscale w-full h-60"
+                                className="brightness-60 grayscale w-full h-60 object-cover"
+                            />
+                        ))}
+                    </div>
+                )}
+
+                {covers.length === 3 && (
+                    <div className="grid grid-cols-2">
+                        {covers.map((cover, index) => (
+                            <img
+                                key={`${cover}-${index}`}
+                                src={cover}
+                                alt="Event cover"
+                                className={
+                                    index === 2
+                                        ? "brightness-60 grayscale w-full h-30 object-cover col-span-2"
+                                        : "brightness-60 grayscale w-full h-30 object-cover"
+                                }
+                            />
+                        ))}
+                    </div>
+                )}
+
+                {covers.length >= 4 && (
+                    <div className="grid grid-cols-4">
+                        {covers.map((cover, index) => (
+                            <img
+                                key={`${cover}-${index}`}
+                                src={cover}
+                                alt="Event cover"
+                                className="brightness-60 grayscale w-full h-60 object-cover"
                             />
                         ))}
                     </div>
@@ -105,41 +134,47 @@ export function ListCard({ list }: ListCardProps) {
       opacity-0 translate-x-2 group-hover:opacity-100 group-hover:translate-x-0
       transition-all duration-200">
 
-                    <Button className="bg-[#090D11] hover:bg-[#F0A42E] text-white hover:text-black text-sm font-bold px-3 py-1.5 rounded-md cursor-pointer w-fit">
-                        <Eye />
-                    </Button>
+                    {covers.length > 0 && (
+                        <Button onClick={() => navigate(`${list.id}`)} className="bg-[#090D11] hover:bg-[#F0A42E] text-white hover:text-black text-sm font-bold px-3 py-1.5 rounded-md cursor-pointer w-fit">
+                            <Eye />
+                        </Button>
+                    )}
 
-                    <Button className="bg-[#090D11] hover:bg-[#F0A42E] text-white hover:text-black text-sm font-bold px-3 py-1.5 rounded-md cursor-pointer w-fit">
-                        <PenIcon />
-                    </Button>
-
-                    <Dialog open={openDelete} onOpenChange={setOpenDelete}>
-                        <DialogTrigger render={
-                            <Button className="bg-[#090D11]  hover:bg-[#ef4444] text-white text-sm font-bold px-3 py-1.5 rounded-md cursor-pointer w-fit">
-
-                                <Trash color="white" />
-                            </Button>} />
+                    <Dialog open={openEdit} onOpenChange={setOpenEdit}>
+                        <DialogTrigger render={<Button className="bg-[#090D11] hover:bg-[#F0A42E] text-white hover:text-black text-sm font-bold px-3 py-1.5 rounded-md cursor-pointer w-fit">
+                            <PenIcon />
+                        </Button>} />
                         <DialogContent className="sm:max-w-sm bg-[#141430] flex flex-col">
-                            <fetcher.Form method="post">
+                            <fetcher.Form method="put">
                                 <DialogHeader>
-                                    <DialogTitle className="text-gray-500 font-bold">Deseja excluir {list.title}?</DialogTitle>
-                                    <DialogDescription>
-                                    </DialogDescription>
+                                    <DialogTitle className="text-gray-500 font-bold">Editar {list.title}</DialogTitle>
                                 </DialogHeader>
 
-                                <div className="mt-2 flex justify-end gap-2">
-                                    <input type="hidden" name="intent" value="delete" />
+                                <div className="mt-2 flex flex-col justify-end gap-2">
+                                    <input type="hidden" name="intent" value="edit" />
                                     <input type="hidden" name="listId" value={list.id} />
-                                    <DialogClose render={<Button variant="secondary" className="bg-[#07070F] hover:bg-[#101029] text-gray-500 cursor-pointer">Cancelar</Button>} />
-                                    <Button type="submit"
-                                        variant="destructive"
-                                        className="cursor-pointer">
-                                        {isSubmitting ? <Spinner /> : 'Deletar'}
-                                    </Button>
+
+                                    <FieldGroup>
+                                        <Field>
+                                            <Label htmlFor="titleEdit" className="text-gray-500">Título</Label>
+                                            <Input id="titleEdit" name="titleEdit" className="text-gray-500" defaultValue={list.title} required />
+                                        </Field>
+                                    </FieldGroup>
+                                    <div className="flex gap-2 justify-end">
+                                        <DialogClose render={<Button variant="secondary" className="bg-[#07070F] hover:bg-[#101029] text-gray-500 cursor-pointer">Cancelar</Button>} />
+                                        <Button type="submit"
+                                            className="bg-[#F0A42E] hover:bg-[#e69d30] text-black w-23 font-bold cursor-pointer">
+                                            {isSubmitting ? <Spinner /> : 'Salvar'}
+                                        </Button>
+                                    </div>
+
                                 </div>
                             </fetcher.Form>
                         </DialogContent>
                     </Dialog>
+
+                    <DeleteDialog openDelete={openDelete} setOpenDelete={setOpenDelete} list={list}/>
+                    
                 </div>
             </div>
         </Card>
