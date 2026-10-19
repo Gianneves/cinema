@@ -3,6 +3,7 @@ import type { Route } from "./+types/list-detail";
 import { GetOneList, RemoveMovie } from "./api/handle-lists";
 import { RenderMovieCard } from "~/components/renderMovieCard";
 import type { AddMovieDto } from "~/types/list";
+import { BackButton } from "~/components/backButton";
 
 export async function action({ request }: Route.ActionArgs) {
     const formData = await request.formData();
@@ -32,9 +33,11 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 
 export default function ListDetail() {
     const { list } = useLoaderData<typeof loader>();
+    const text = 'Todas as watchlists';
 
     return (
         <div className="p-4 min-h-screen bg-[#07070E]">
+            <BackButton text={text} />
             <div className="mt-10 flex justify-between">
                 <div className="flex flex-col">
                     <span className="text-[#F0A42E] font-medium">NA LISTA</span>
